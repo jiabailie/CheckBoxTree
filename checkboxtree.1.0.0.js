@@ -57,13 +57,13 @@ Tree.prototype = {
         } else {
             sheet.appendChild(document.createTextNode(cssCode));
         }
-        //添加根节点
+        // Add the root
         var icon = me.makeImage("nolines_plus", "collapse root");
         var checkbox0 = me.makeImage("checkbox_0", "checkbox_0");
         me.panel.innerHTML = me.makeTree(me.tree[0][0], "b", 0, icon + checkbox0, me.tree[0][2]);
         me.childs = [];
-        me.checks = []; //装载点击数
-        me.status = []; //0全不选,1选中部分,2选中全部
+        me.checks = []; // How many sub-nodes has been checked for each node
+        me.status = []; //0 no sub-nodes checked,1 part of sub-nodes checked,2 all sub-nodes checked
         me.panel.onclick = function (e) {
             e = e || window.event;
             var node = e.srcElement ? e.srcElement : e.target;
@@ -73,8 +73,7 @@ Tree.prototype = {
             var currentLevel = current.getAttribute("level");
             var subtree = me.getSubtree(currentIndex);
             var children = current.children[3];
-            //添加子树集合
-            //存在子树并且没有添加时才添加
+            // Add sub-nodes when current node has no sub-nodes or haven't add them.
             if (subtree && !children) {
                 children = document.createElement("div");
                 var childs = [];
@@ -84,10 +83,10 @@ Tree.prototype = {
                     var prefix = isLast ? "blank" : "line";
                     icon = isLast ? "plusbottom" : "plus";
                     if (isLimb) {
-                        icon = me.makeImage(icon, "collapse limb"); //枝节点前面的装饰图标
+                        icon = me.makeImage(icon, "collapse limb"); // Decorative icon before branch nodes.
                     } else {
-                        icon = icon.replace(/plus/, "join");        //叶子节点前面的连线图标
-                        icon = me.makeImage(icon, "leaf");          //叶子节点前面的装饰图标
+                        icon = icon.replace(/plus/, "join");        // Line icon before leaf nodes.
+                        icon = me.makeImage(icon, "leaf");          // Decorative icon before leaf nodes.
                     }
                     childs.push(subtree[i][0]);
                     if (me.status[currentIndex] == 2) { checkbox0 = me.makeImage("checkbox_1", "checkbox_1"); }
@@ -100,17 +99,17 @@ Tree.prototype = {
                 children.className = (currentPrefix == "line") ? "line" : "blank";
                 current.insertBefore(children, null);
             }
-            if (/collapse/.test(node.className)) {            //如果点击是加号或减号图标
-                node.src = node.src.replace(/plus/, "minus"); //改变连线图标
-                node.className = node.className.replace("collapse", "unfold"); //改变装饰图标
+            if (/collapse/.test(node.className)) {            // When fold/unfold icon is clicked.
+                node.src = node.src.replace(/plus/, "minus"); // Change the fold/unfold icon.
+                node.className = node.className.replace("collapse", "unfold"); // Change the decorative icon.
                 children && (children.style.display = "block");
             } else if (/unfold/.test(node.className)) {
-                node.src = node.src.replace(/minus/, "plus"); //改变连线图标
-                node.className = node.className.replace("unfold", "collapse"); //改变装饰图标
+                node.src = node.src.replace(/minus/, "plus"); // Change the connective line icon.
+                node.className = node.className.replace("unfold", "collapse"); // Change the decorative icon.
                 children && (children.style.display = "none");
             }
-            if (/checkbox/.test(node.className)) {//如果单击的是checkbox图标
-                var checked = me.isChecked(node); //如果是true则--,如果是false则++
+            if (/checkbox/.test(node.className)) { // When checkbox icon is clicked.
+                var checked = me.isChecked(node);
                 me.status[parseInt(current.getAttribute("index"))] = checked ? 0 : 2;
                 me.setJuniorCheckbox(current, checked)
                 me.setPriorCheckbox(current, checked);
@@ -200,31 +199,30 @@ Tree.prototype = {
             }
         }
     },
-    setPriorCheckbox: function (node, /*Boolean*/checked) {//设置上一级树的checkbox
-        var index = parseInt(node.getAttribute("index"));     // 当前节点索引
-        var prior = node.parentNode.parentNode;               // 当前节点的父节点
-        var priorIndex = parseInt(this.tree[index][1]);       // 父节点索引
-        var priorCheckbox = prior.children[1];                // 父节点checkbox框
-        var priorLevel = parseInt(prior.getAttribute("level")); // 父节点层级
-        var priorCount = this.checks[priorIndex] || 0;          // 父节点的子节点中有几个选中
+    setPriorCheckbox: function (node, /*Boolean*/checked) {   // Set its higher level's checkbox status.
+        var index = parseInt(node.getAttribute("index"));     // The index of current node.
+        var prior = node.parentNode.parentNode;               // Its father node.
+        var priorIndex = parseInt(this.tree[index][1]);       // Father node's index.
+        var priorCheckbox = prior.children[1];                // Checkbox style of its father node.
+        var priorLevel = parseInt(prior.getAttribute("level")); // Level of its father node.
+        var priorCount = this.checks[priorIndex] || 0;          // How many sub-nodes are selected in its father sub-node set.
         priorCount = this.getPriorChildrenChecked(checked, index, priorIndex);
         if (priorCount == -1) { return; }
         this.checks[priorIndex] = priorCount;
         if (!!priorCheckbox) {
-            //当priorIndex等于-1时,
-            //priorCheckbox不存在
-            //me.childs[priorIndex]为undefined,不存在长度
+            // When priorIndex != -1, priorCheckbox is not exist,
+            // and me.childs[priorIndex] is undefined.
             var replaceCheckbox = this.status[priorIndex] == 0 ? "checkbox_0" : (this.status[priorIndex] == 2 ? "checkbox_1" : "checkbox_2");
-            //checkbox_1为全选,checkbox_2为非全选
-            //全选,则让上级++,即让checked为false
+            // checkbox_1 is all selected checkbox style, and checkbox_2 is part selected checkbox style.
+            // When certain nodes' all sub-nodes are select, let checked is false when set its father's style.
             priorCheckbox.src = priorCheckbox.src.replace(/checkbox_\d/, replaceCheckbox);
             priorCheckbox.className = replaceCheckbox;
         }
-        if (priorLevel > 0) { //根节点没有priorCheckbox,且priorLevel等于-1
+        if (priorLevel > 0) { // The root doesn't have priorCheckbox, and priorLevel==-1
             this.setPriorCheckbox(prior, checked);
         }
     },
-    isChecked: function (node) {//如果是checkbox_0返回false,checkbox_1与checkbox_2返回true
+    isChecked: function (node) {// If its checkbox style is checkbox_0, return false, else return true(checkbox_1 or checkbox_2).
         return parseInt(node.src.slice(-5, -4)) > 0;
     },
     makeImage: function (image) {
@@ -235,7 +233,7 @@ Tree.prototype = {
         return "<img src='" + this.path + image + ".gif' " + status + " />"
     },
     getPriorChildrenChecked: function (/*Boolean*/checked, currentIndex, priorIndex) {
-        //如果当前节点不存在父节点
+        // If current node doesn't have father node.
         if (this.childs[priorIndex] == undefined || this.childs[priorIndex].length == 0) { return -1; }
         var cnt1 = 0, cnt2 = 0, cnt = 0;
         var priorCount = this.childs[priorIndex].length - 1;
