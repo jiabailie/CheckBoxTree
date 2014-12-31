@@ -48,7 +48,7 @@ Tree.prototype = {
                     id + " .blank {margin-left:15px;}\n" +
                     id + " img.collapse {padding-right:15px;" + bg + "folder.gif) no-repeat right center;}\n" +
                     id + " img.unfold {padding-right:15px;" + bg + "folderopen.gif) no-repeat right center;}\n" +
-                    id + " img.root {padding-right:15px;" + bg + "blank.gif) no-repeat right center;}\n" +
+                    id + " img.root {padding-right:1px;" + bg + "blank.gif) no-repeat right center;}\n" +
                     id + " img.leaf {padding-right:15px;" + bg + "blank.gif) no-repeat right center;}\n";
         if (! +"\v1") {
             sheet.styleSheet.cssText = cssCode;
