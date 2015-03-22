@@ -33,6 +33,7 @@ Tree.prototype = {
         me.checked = config.checked;
         me.container = ((typeof renderTo === "string") ?
         document.getElementById(renderTo) : renderTo) || document.body;
+        document.getElementById(renderTo).innerHTML = '';
         me.panel = document.createElement("div");
         me.panel.setAttribute("id", "tree" + me.id);
         me.container.insertBefore(me.panel, null);
