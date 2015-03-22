@@ -8,7 +8,7 @@ It's very simple to use it.
 ```javascript
 /*
  * renderTo: The id of div which you want to put the checkbox tree;
- * data:     The data you want to display it, which format is [id, parentid, nodename], -1 is always the root it;
+ * data:     The data you want to display it, which format is [id, parentid, nodename], -1 represents its root;
  * checked:  The data which is included in the previous parameter, and you want these nodes are checked.
  */
 tree = new Tree({ renderTo: "test", data: data, checked: checked });
